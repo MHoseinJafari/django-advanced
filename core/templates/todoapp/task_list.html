@@ -1,0 +1,30 @@
+<h1>Tasks</h1>
+<br>
+<ul>
+{% for Task in object_list %}
+    <li>
+        <h3> {{ Task.name }}</h3>
+        <p>{{ Task.created_date}}</p>
+        <p>{{ Task.get_status_display }}</p>
+        <a href ='{% url "tasks:task-edit" pk=Task.id %}'>
+            <h5>edit</h5>
+        </a>
+    </li>
+<br>
+{% empty %}
+    <li>No Task yet.</li>
+{% endfor %}
+</ul>
+
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+  Hi {{ user.email }}!
+  <p><a href="{% url 'logout' %}">Log Out</a></p>
+{% else %}
+  <p>You are not logged in</p>
+  <a href="{% url 'login' %}">Log In</a>
+{% endif %}
+{% endblock %}
