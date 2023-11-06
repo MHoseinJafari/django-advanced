@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'TodoApp',
     'rest_framework',
     'django_filters',
+    'drf_yasg',
     
 ]
 
