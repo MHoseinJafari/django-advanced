@@ -6,7 +6,7 @@
         <h3> {{ Task.name }}</h3>
         <p>{{ Task.created_date}}</p>
         <p>{{ Task.get_status_display }}</p>
-        <a href ='{% url "tasks:task-edit" pk=Task.id %}'>
+        <a href ='{% url "todoapp:task-edit" pk=Task.id %}'>
             <h5>edit</h5>
         </a>
     </li>
