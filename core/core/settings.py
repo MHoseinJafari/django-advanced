@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'TodoApp',
+    'rest_framework',
+    'django_filters',
     
 ]
 
