@@ -235,7 +235,9 @@ class ResetPasswordConfirmation(generics.GenericAPIView):
             return Response({"details": "token is not valid"})
         user_obj = User.objects.get(pk=user_id)
         serializer = ResetPasswordSerializer(
+
             data=request.data
+
         )
         serializer.is_valid(raise_exception=True)
         user_obj.set_password(serializer.data.get("new_password"))
