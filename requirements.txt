@@ -12,3 +12,7 @@ djangorestframework-simplejwt
 
 # email third party modules
 django-mail-templated
+
+#formatter modules
+black
+flake8
