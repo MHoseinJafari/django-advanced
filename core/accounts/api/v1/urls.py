@@ -6,7 +6,7 @@ from rest_framework_simplejwt.views import (
 )
 
 
-app_name = "accounts-api-v1"
+app_name = "api-v1"
 
 
 urlpatterns = [
@@ -31,7 +31,7 @@ urlpatterns = [
     path(
         "jwt/create/",
         views.CustomTokenObtainPairView.as_view(),
-        name="jtw-create",
+        name="jwt-create",
     ),
     path("jwt/refresh/", TokenRefreshView.as_view(), name="jtw-refresh"),
     path("jwt/verify/", TokenVerifyView.as_view(), name="token-verify"),
@@ -45,9 +45,9 @@ urlpatterns = [
     path("profile/", views.ProfileApiView.as_view(), name="profile"),
     # email
     path(
-        "verfication-email",
+        "verification-email",
         views.VerficationEmailApiView.as_view(),
-        name="verfication-email",
+        name="verification-email",
     ),
     # activation with token
     path(
@@ -59,7 +59,7 @@ urlpatterns = [
     path(
         "activation/resend/",
         views.ActivationResendApiView.as_view(),
-        name="activation-resend",
+        name="resend-activation",
     ),
     # reset password email
     path(

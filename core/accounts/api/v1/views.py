@@ -8,7 +8,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 import jwt
-from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError
+from jwt.exceptions import (
+    ExpiredSignatureError,
+    InvalidSignatureError,
+    DecodeError,
+)
 
 from django.shortcuts import get_object_or_404
 from django.conf import settings
@@ -113,6 +117,7 @@ class ChangePasswordApiView(generics.GenericAPIView):
 
 
 class ProfileApiView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = ProfileSerializer
     queryset = Profile.objects.all()
 
@@ -123,8 +128,10 @@ class ProfileApiView(generics.RetrieveUpdateAPIView):
 
 
 class VerficationEmailApiView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
-        self.email = "mo@gmail.com"
+        self.email = request.user.email
         user_obj = get_object_or_404(User, email=self.email)
         token = self.get_tokens_for_user(user_obj)
         email_obj = EmailMessage(
@@ -149,18 +156,31 @@ class ActivationApiView(APIView):
             )
             user_id = token.get("user_id")
         except ExpiredSignatureError:
-            return Response({"details": "token has been expired"})
+            return Response(
+                {"details": "token has been expired"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except InvalidSignatureError:
-            return Response({"details": "token is not valid"})
+            return Response(
+                {"details": "token is not valid"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except DecodeError:
+            return Response(
+                {"details": "token is not valid"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         user_obj = User.objects.get(pk=user_id)
         if user_obj.is_verified:
             return Response(
-                {"details": "your accout has already been verified"}
+                {"details": "your accout has already been verified"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
         user_obj.is_verified = True
         user_obj.save()
         return Response(
-            {"details": "your account has been verified successfully"}
+            {"details": "your account has been verified successfully"},
+            status=status.HTTP_200_OK,
         )
 
 
@@ -172,7 +192,7 @@ class ActivationResendApiView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user_obj = serializer.validated_data["user"]
         if user_obj.is_verified:
-            raise Response(
+            return Response(
                 {"details": "user is already activated and verified"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -210,7 +230,7 @@ class ResetPasswordEmailApiView(generics.GenericAPIView):
         )
         EmailThread(email_obj).start()
         return Response(
-            {"details": "user activation send successfully"},
+            {"details": "reset password link send successfully"},
             status=status.HTTP_200_OK,
         )
 
@@ -230,13 +250,22 @@ class ResetPasswordConfirmation(generics.GenericAPIView):
             )
             user_id = token.get("user_id")
         except ExpiredSignatureError:
-            return Response({"details": "token has been expired"})
+            return Response(
+                {"details": "token has been expired"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except InvalidSignatureError:
-            return Response({"details": "token is not valid"})
+            return Response(
+                {"details": "token is not valid"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except DecodeError:
+            return Response(
+                {"details": "token is not valid"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         user_obj = User.objects.get(pk=user_id)
-        serializer = ResetPasswordSerializer(
-            data=request.data
-        )
+        serializer = ResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user_obj.set_password(serializer.data.get("new_password"))
         user_obj.save()
