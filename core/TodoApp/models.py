@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Task(models.Model):
-    name = models.CharField(max_length=35)
+    name = models.CharField(max_length=35, null=False, blank=False)
 
     ON_GOING = 1
     DONE = 2
