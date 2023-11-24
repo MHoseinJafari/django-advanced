@@ -12,3 +12,6 @@ exclude =
     settings.py,
     __init__,
     migrations,
+
+ignore = 
+    E712
