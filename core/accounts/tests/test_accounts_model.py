@@ -145,3 +145,4 @@ class TestUserModel:
         except Exception:
             assert True
         assert Profile.objects.count() == 0
+        assert User.objects.count() == 0
