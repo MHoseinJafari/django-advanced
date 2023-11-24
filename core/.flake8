@@ -13,6 +13,6 @@ exclude =
     __init__,
     migrations,
 
-
 ignore = 
     E712
+
