@@ -19,3 +19,12 @@ flake8
 pytest
 pytest-django
 Faker
+locust
+
+
+# background processing and caching
+celery
+redis
+django-celery-beat
+
+
