@@ -11,7 +11,6 @@ def SendEmail():
 
 @shared_task
 def delete_task():
-    names = ["celery.backend_cleanup","delete task"]
-    PeriodicTask.objects.all().exclude(
-        name__in= names).delete()
+    names = ["celery.backend_cleanup", "delete task"]
+    PeriodicTask.objects.all().exclude(name__in=names).delete()
     PeriodicTasks.changed()
