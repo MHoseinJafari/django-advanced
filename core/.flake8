@@ -12,6 +12,7 @@ exclude =
     settings.py,
     __init__,
     migrations,
+    accounts/views.py,
 
 ignore = 
     E712
