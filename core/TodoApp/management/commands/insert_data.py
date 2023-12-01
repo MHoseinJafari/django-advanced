@@ -7,7 +7,7 @@ import random
 
 
 class Command(BaseCommand):
-    help = "create a test task"
+    help = "create a test task and test faker module"
 
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
