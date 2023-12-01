@@ -25,15 +25,36 @@ from .serializers import (
     CustomTokenObtainPairSerializer,
     ChangePasswordSerializer,
     ProfileSerializer,
-    ActivationResendSerializer,
+    ActivationEmailSerializer,
     ResetPasswordSerializer,
 )
 from django.contrib.auth import get_user_model
 from ...models import Profile
+from accounts.permissions import IsVerified
 
 User = get_user_model()
 
 
+# TODO:send email function for multiple views
+def send_email(email, email_format):
+    user_obj = get_object_or_404(User, email=email)
+    token = get_tokens_for_user(user_obj)
+    email_obj = EmailMessage(
+        "email/%s.tpl" % email_format,
+        {"token": token},
+        "admin@admin.com",
+        to=[email],
+    )
+    EmailThread(email_obj).start()
+
+
+# TODO:generate token for user for send email function
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+    return str(refresh.access_token)
+
+
+# TODO:register user and send email for activation
 class RegistrationApiView(generics.GenericAPIView):
     serializer_class = RegistrationSerializer
 
@@ -43,23 +64,12 @@ class RegistrationApiView(generics.GenericAPIView):
             serializer.save()
             email = serializer.validated_data["email"]
             data = {"email": email}
-            user_obj = get_object_or_404(User, email=email)
-            token = self.get_tokens_for_user(user_obj)
-            email_obj = EmailMessage(
-                "email/send_email.tpl",
-                {"token": token},
-                "admin@admin.com",
-                to=[email],
-            )
-            EmailThread(email_obj).start()
+            send_email(email, email_format="activation")
             return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def get_tokens_for_user(self, user):
-        refresh = RefreshToken.for_user(user)
-        return str(refresh.access_token)
 
-
+# TODO:generate token
 class CustomobtainAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(
@@ -73,6 +83,7 @@ class CustomobtainAuthToken(ObtainAuthToken):
         )
 
 
+# TODO:delete token
 class CustomDiscardAuthToken(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -81,13 +92,15 @@ class CustomDiscardAuthToken(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+# TODO:generate jwt token
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 
+# TODO:user can change password in account
 class ChangePasswordApiView(generics.GenericAPIView):
     model = User
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsVerified]
     serializer_class = ChangePasswordSerializer
 
     def get_object(self):
@@ -116,8 +129,9 @@ class ChangePasswordApiView(generics.GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# TODO:show profile in account and user can change profile information
 class ProfileApiView(generics.RetrieveUpdateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsVerified]
     serializer_class = ProfileSerializer
     queryset = Profile.objects.all()
 
@@ -127,27 +141,17 @@ class ProfileApiView(generics.RetrieveUpdateAPIView):
         return obj
 
 
+# TODO:structure of send email
 class VerficationEmailApiView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         self.email = request.user.email
-        user_obj = get_object_or_404(User, email=self.email)
-        token = self.get_tokens_for_user(user_obj)
-        email_obj = EmailMessage(
-            "email/send_email.tpl",
-            {"token": token},
-            "admin@admin.com",
-            to=[self.email],
-        )
-        EmailThread(email_obj).start()
+        send_email(self.email, email_format="activation")
         return Response("email sent")
 
-    def get_tokens_for_user(self, user):
-        refresh = RefreshToken.for_user(user)
-        return str(refresh.access_token)
 
-
+# TODO:activation email for verify users
 class ActivationApiView(APIView):
     def get(self, request, token, *args, **kwargs):
         try:
@@ -184,8 +188,9 @@ class ActivationApiView(APIView):
         )
 
 
+# TODO:resend activation email for verify users
 class ActivationResendApiView(generics.GenericAPIView):
-    serializer_class = ActivationResendSerializer
+    serializer_class = ActivationEmailSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -196,49 +201,35 @@ class ActivationResendApiView(generics.GenericAPIView):
                 {"details": "user is already activated and verified"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        token = self.get_tokens_for_user(user_obj)
-        email_obj = EmailMessage(
-            "email/send_email.tpl",
-            {"token": token},
-            "admin@admin.com",
-            to=[user_obj.email],
-        )
-        EmailThread(email_obj).start()
+        send_email(user_obj.email, email_format="activation")
         return Response(
             {"details": "user activation resend successfully"},
             status=status.HTTP_200_OK,
         )
 
-    def get_tokens_for_user(self, user):
-        refresh = RefreshToken.for_user(user)
-        return str(refresh.access_token)
 
-
+# TODO:send email for reset password when user is verified and can not login
 class ResetPasswordEmailApiView(generics.GenericAPIView):
-    serializer_class = ActivationResendSerializer
+    serializer_class = ActivationEmailSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user_obj = serializer.validated_data["user"]
-        token = self.get_tokens_for_user(user_obj)
-        email_obj = EmailMessage(
-            "email/reset_password.tpl",
-            {"token": token},
-            "admin@admin.com",
-            to=[user_obj.email],
-        )
-        EmailThread(email_obj).start()
-        return Response(
-            {"details": "reset password link send successfully"},
-            status=status.HTTP_200_OK,
-        )
-
-    def get_tokens_for_user(self, user):
-        refresh = RefreshToken.for_user(user)
-        return str(refresh.access_token)
+        if user_obj.is_verified:
+            send_email(user_obj.email, email_format="reset_password")
+            return Response(
+                {"details": "reset password link send successfully"},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {"details": "user is not verified"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
 
+# TODO:with this class the user is allowed to change password
 class ResetPasswordConfirmation(generics.GenericAPIView):
     model = User
     serializer_class = ResetPasswordSerializer

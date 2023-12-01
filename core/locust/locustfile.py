@@ -7,7 +7,7 @@ class QuickstartUser(HttpUser):
             "/accounts/api/v1/jwt/create/",
             data={
                 "email": "mo@gmail.com",
-                "password": "m@1234567",
+                "password": "m@12345678",
             },
         ).json()
         self.client.headers = {
