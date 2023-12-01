@@ -70,7 +70,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ["id", "email", "first_name", "last_name", "description"]
 
 
-class ActivationResendSerializer(serializers.Serializer):
+class ActivationEmailSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
 
     def validate(self, attrs):

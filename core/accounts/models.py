@@ -9,6 +9,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
+# crate custom user and superuser
 class UserManager(BaseUserManager):
     def create_user(self, email, password, **extra_fields):
         if not email:
@@ -32,6 +33,7 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
+# custom User class methods for creating and updating users from models
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=35, unique=True)
     is_superuser = models.BooleanField(default=False)

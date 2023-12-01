@@ -2,6 +2,12 @@ from celery import shared_task
 from django_celery_beat.models import PeriodicTask, PeriodicTasks
 from time import sleep
 
+"""
+this tasks run by celery and redis.
+this is a test for running a periodic task
+
+"""
+
 
 @shared_task
 def SendEmail():

@@ -15,7 +15,7 @@ def api_client():
 @pytest.fixture
 def common_user():
     user = User.objects.create_user(
-        email="mohammad@gmail.com", password="m@1234567"
+        email="mohammad@gmail.com", password="m@1234567", is_verified=True
     )
     return user
 
@@ -48,13 +48,6 @@ class TestTaskApi:
         response = api_client.get(url)
         assert response.status_code == 200
 
-    def test_create_task_unauthorized_response_401_status(
-        self, api_client, task_data
-    ):
-        url = reverse("todoapp:api-v1:task-list")
-        response = api_client.post(url, task_data, format="json")
-        assert response.status_code == 401
-
     def test_create_task_response_201_status(
         self, api_client, common_user, task_data
     ):
@@ -67,6 +60,13 @@ class TestTaskApi:
         assert task is not None
         assert Task.objects.count() == 1
         assert Task.objects.all()[0].name == "test task"
+
+    def test_create_task_unauthorized_response_401_status(
+        self, api_client, task_data
+    ):
+        url = reverse("todoapp:api-v1:task-list")
+        response = api_client.post(url, task_data, format="json")
+        assert response.status_code == 401
 
     def test_create_task_no_status_bad_request_response_400_status(
         self, api_client, common_user
