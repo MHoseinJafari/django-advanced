@@ -1,5 +1,5 @@
 from celery import shared_task
-from django_celery_beat.models import PeriodicTask, PeriodicTasks
+from django_celery_beat.models import PeriodicTask
 from time import sleep
 
 """
@@ -18,5 +18,5 @@ def SendEmail():
 @shared_task
 def delete_task():
     names = ["celery.backend_cleanup", "delete task"]
+    print(PeriodicTask.objects.all())
     PeriodicTask.objects.all().exclude(name__in=names).delete()
-    PeriodicTasks.changed()
