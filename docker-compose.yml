@@ -19,21 +19,32 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - SECRET_KEY=test
-      - DEBUG=True
+      DJANGO_SETTINGS_MODULE: core.settings.dev
     depends_on:
       - redis
 
   worker1:
     build: .
     command: celery -A core worker --loglevel=info
+    environment:
+      DJANGO_SETTINGS_MODULE: core.settings.dev
     volumes:
       - ./core:/app
     depends_on:
       - redis
       - backend
+  
+  celery-beat-dev:
+    build: .
+    command: celery -A core beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
 
+    volumes:
+      - ./core:/app
+    environment:
+      DJANGO_SETTINGS_MODULE: core.settings.dev
 
+    depends_on:
+      - redis
 
   smtp4dev:
     image: rnwood/smtp4dev:v3
@@ -61,7 +72,6 @@ services:
     volumes:
       - ./core/locust:/mnt/locust
     command: -f /mnt/locust/locustfile.py --worker --master-host master
-
 
 
 volumes:

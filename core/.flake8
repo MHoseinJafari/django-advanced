@@ -9,7 +9,7 @@ exclude =
     __pycache__,
     venv,
     .env
-    settings.py,
+    settings,
     __init__,
     migrations,
     accounts/views.py,
